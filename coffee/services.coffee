@@ -1,5 +1,78 @@
 module = angular.module "myApp.services", []
 
+class InfoWindow
+  constructor: ->
+    # this is a start
+    # question: How to inject rootScope vars into this html?
+    # like: {{mapCenter.lat}}
+    @self = new google.maps.InfoWindow(
+      content: """
+        <div class="modal-header">
+          <a href="#" class="delete btn">Delete</a>
+          <a href="#" class="undelete btn" style="display: none">UnDelete</a>
+          <a href="#/place" class="edit btn btn-primary">Edit</a>
+          <a href="#/map" id="place-item-move" class="btn" data-dismiss="modal" >Move</a>
+          <a href="#/place/:id/directions" id="place-item-directions" class="btn" data-dismiss="modal" >Directions</a>
+          <a href="#/map" class="btn" data-dismiss="modal" >Close</a>
+        </div>
+        <div class="modal-body">
+          <form class="form-horizontal">
+            <fieldset>
+              <div class="control-group">    &nbsp;&nbsp;Marker#:&nbsp;    {{markerno}}</div>
+            </fieldset>
+          </form>
+        </div>        
+      """
+      )
+
+class GMarker
+  constructor: (@map, @lat, @lng) ->
+    @position = new google.maps.LatLng(@lat, @lng)
+    @render()
+
+  render: ->
+    @marker = new google.maps.Marker(
+      draggable: true
+    )
+
+    google.maps.event.addListener @marker, "dragend", @dragend
+    google.maps.event.addListener @marker, "click", @click
+
+    @show()
+
+  dragend: =>
+    if confirm("Are you sure you want to move this marker?")
+      # @model.set(lat:  @marker.position.lat(), lng: @marker.position.lng())
+      # @model.save()
+    else
+      # move back to original position
+      # @marker.setPosition( new google.maps.LatLng(@model.get('lat'), @model.get('lng')))
+
+  show: =>
+    @marker.setPosition(@position)
+
+    # title = ''
+    # @marker.setTitle(title)
+    @marker.setMap(@map)
+
+  click: =>
+    infoWindow = new InfoWindow()
+
+    # testing
+    $('a#place-item-move.btn').live 'click', (event) ->
+      #console.log 'event', event
+      #event.preventDefault()
+      console.log 'place-item-move'
+
+
+    infoWindow.self.open(@map, @marker)
+
+
+  move: (event) =>
+    console.log 'move'
+    event.preventDefault()
+    alert 'move'
+
 class GMap
   constructor: (options) ->
     # TODO: What is method to loop through option attribs and assign to @/this?
@@ -57,6 +130,10 @@ class GMap
     # resize mapEl div when window is resized
     @win.resize @resizeMapEl
     $('#map-position-button').click @onPositionButtonClick
+    $('#map-add-button').click(@addPlace)
+
+    # this will be moved to GMarker
+    $('#map-directions-button').click(@getDirections)
 
     @map            = new google.maps.Map(@mapEl[0], {
       zoom:         @zoom
@@ -78,6 +155,21 @@ class GMap
     @rootScope.mapType    = @mapType
 
     @updateLocation()
+
+
+  getDirections: =>
+    console.log 'getDirections'
+    
+  addPlace: =>
+    #if confirm("Add a new place?")
+    lat = @map.getCenter().lat()
+    lng = @map.getCenter().lng()
+    #console.log lat, lng
+    marker = new GMarker(@map, lat, lng)
+    # @places.create(territoryno: @preferences.get('territoryno'), point: "POINT (#{lat} #{lng})")
+
+
+
 
   onPositionButtonClick: =>
     if !@positionTracking.state

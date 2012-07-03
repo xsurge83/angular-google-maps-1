@@ -27,48 +27,91 @@
 	<script src="js/directives.js"></script>
 </head>
 <body ng-controller="MainCtrl">
+
 	<!-- NAVBAR -->
 	<div class="navbar navbar-fixed-top">
+
 		<div class="navbar-inner">
 			<table class="nav pull">
 				<tr>
-					<td><a href="#/" id="home-button"><img src="img/home.png" /></a></td>
+					<td>
+						<a href="#/" id="home-button">
+							<img title="Home" src="img/home.png" />
+						</a>
+					</td>
 				</tr>
 			</table>
+
 			<table class="nav pull-right">
 				<tr>
-					<td id="map-button" ng-show="!mapShown()"><a href="#/map"><img src="img/map.png" /></a></td>
-					<td id="list-button" ng-show="mapShown()"><a href="#/list"><img src="img/list.png" /></a></td>
+					<td id="map-button" ng-show="!mapShown()">
+						<a href="#/map">
+							<img title="Map" src="img/map.png" />
+						</a>
+					</td>
 
-					<td id="map-position-button" ng-show="mapShown()"><img src="img/position.png" /></td>
-					<td id="add-button" ng-show="mapShown()"><img src="img/add.png" /></td>
+					<td id="list-button" ng-show="mapShown()">
+						<a href="#/list">
+							<img title="List" src="img/list.png" />
+						</a>
+					</td>
 
-					<td id="search-button"><a href="#/search"><img src="img/search.png" /></a></td>
-					<td id="layers-button" ng-show="mapShown()"><img src="img/layers.png" /></td>
-					<td id="menu-button"><a href="#/menu"><img src="img/menu.png" /></a></td>
+					<td id="map-position-button" ng-show="mapShown()">
+						<img title="Position" src="img/position.png" />
+					</td>
+
+					<td id="map-add-button" ng-show="mapShown()">
+						<img title="Add" src="img/add.png" />
+					</td>
+
+					<!--
+						TODO: check if positionTracking is on and current position is not 'close' (how?), prompt to navigate from current position to this 'center' point. Or if user has a 'home' position (private), offer to get directions home.
+						The following will return directions from saddr to daddr:
+						http://maps.google.com/?saddr=9.993552791991132,-84.20888416469096&daddr=9.9829723,-84.1699572
+					-->
+					<td id="map-directions-button" ng-show="mapShown()">
+						<a href="https://maps.google.com/maps?q={{mapCenter.lat}},{{mapCenter.lng}}&t={{mapType}}&z={{mapZoom}}">
+							<img title="Directions" src="img/directions.png" />
+						</a>
+					</td>
+
+					<td id="search-button">
+						<a href="#/search">
+							<img title="Search" src="img/search.png" />
+						</a>
+					</td>
+
+					<td id="layers-button" ng-show="mapShown()">
+						<img title="Layers" src="img/layers.png" />
+					</td>
+
+					<td id="menu-button">
+						<a href="#/menu">
+							<img title="Menu" src="img/menu.png" />
+						</a>
+					</td>
 				</tr>
 			</table>
 		</div>
 	</div>
 
+	<!-- MAIN VIEW -->
+	<div class="container-fluid" ng-hide="mapShown()" ng-view></div>
 
+	<!-- MAP CANVAS ELEMENT -->
 	<div id="map" ng-show="mapShown()"></div>
+
+	<!-- MAP CROSSHAIR ELEMENT -->
 	<div id="map-crosshair" ng-show="mapShown()">
 		<img src="img/crosshair.png" />
 	</div>
 
+	<!-- MAP INFO DIV -->
 	<div id="map-info" ng-show="mapShown()">
-		{{mapCenter.lat}},{{mapCenter.lng}}
-
 		<a href="https://maps.google.com/maps?q={{mapCenter.lat}},{{mapCenter.lng}}&t={{mapType}}&z={{mapZoom}}">Google Map</a>
 		&mdash;
 		<a href="{{protocol}}://{{host}}#/maps?q={{mapCenter.lat}},{{mapCenter.lng}}&t={{mapType}}&z={{mapZoom}}">OurField Map</a>
 	</div>
-
-
-
-	<!-- MAIN VIEW -->
-	<div class="container-fluid" ng-hide="mapShown()" ng-view></div>
 
 
 </body>
