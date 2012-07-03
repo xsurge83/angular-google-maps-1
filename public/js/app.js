@@ -16,15 +16,21 @@
     }).when("/map:params", {
       templateUrl: "partials/map.html",
       controller: 'MapCtrl'
+    }).when("/search", {
+      templateUrl: "partials/search.html",
+      controller: 'SearchCtrl'
     }).otherwise({
       redirectTo: "/"
     });
   });
 
-  app.run(function($rootScope) {
+  app.run(function($rootScope, $location) {
     var rootScope;
     rootScope = $rootScope;
-    return rootScope.navBarHeight = 40;
+    rootScope.navBarHeight = 40;
+    return rootScope.mapShown = function() {
+      return $location.path().indexOf('/map') > -1;
+    };
   });
 
 }).call(this);

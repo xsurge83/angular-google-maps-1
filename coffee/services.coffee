@@ -3,9 +3,10 @@ module = angular.module "myApp.services", []
 class GMap
   constructor: (options) ->
     # TODO: What is method to loop through option attribs and assign to @/this?
-    @rootScope      = options.rootScope
-    @dragging       = 0 # user id dragging map
-    @location       = options.location
+    @rootScope        = options.rootScope
+    @dragging         = 0 # user id dragging map
+    @location         = options.location
+    @positionTracking = off
 
     # check for lat/lng, zoom, maptype on url
     q               = @location.search().q
@@ -55,6 +56,7 @@ class GMap
 
     # resize mapEl div when window is resized
     @win.resize @resizeMapEl
+    $('#map-position-button').click @onPositionButtonClick
 
     @map            = new google.maps.Map(@mapEl[0], {
       zoom:         @zoom
@@ -76,6 +78,88 @@ class GMap
     @rootScope.mapType    = @mapType
 
     @updateLocation()
+
+  onPositionButtonClick: =>
+    if !@positionTracking.state
+      @positionTrackingOn()
+      @positionTrackGoTo()
+
+    else if @positionTracking.state
+      @cancelPositionTracking()
+
+  positionTrackingOn: ->
+    if not @nav
+      @nav = window.navigator
+
+    if @nav
+      geoLoc = @nav.geolocation
+      window.map = @map
+
+      if geoLoc
+        watchID = geoLoc.watchPosition(geoSuccessCallback, geolocationError, options={enableHighAccuracy: true})
+
+      try
+        geoLoc.getCurrentPosition(geoSuccessCallback, geolocationError, options={enableHighAccuracy: true})
+
+      @positionTracking.state = true
+
+
+  positionTrackGoTo: ->
+    pos = window.pos
+    if pos
+      @map.setCenter(new google.maps.LatLng(pos.lat(), pos.lng()))
+
+  cancelPositionTracking: (watchID) ->
+    window.navigator.geolocation.clearWatch(watchID)
+    try
+      window.userPositionMarker.setMap(null)
+      
+    @positionTracking.state = false
+
+  geoSuccessCallback = (position) =>
+    if position.coords.latitude
+      window.pos = new google.maps.LatLng(position.coords.latitude, position.coords.longitude)
+
+      try
+        window.userPositionMarker.setMap(null)
+
+      icon = 'img/blue-dot.png'
+      # purpose is to center marker in crosshair
+      image = new google.maps.MarkerImage(icon,
+        new google.maps.Size(16, 16),
+        new google.maps.Point(0, 0),
+        new google.maps.Point(8, 3))
+
+      window.userPositionMarker = new google.maps.Marker(
+        icon: image
+        position: window.pos
+        # want to center on the user position initially 
+        # but allow user to pan around without map auto centering
+        map: window.map
+        title: 'You are here.'
+      )
+
+  geolocationError = (error) ->
+    # This needs testing
+    console.log 'geoLoc error'
+    msg = 'Unable to locate position. '
+    switch error.code
+      when error.TIMEOUT then msg += 'Timeout.'
+      when error.POSITION_UNAVAILABLE then msg += 'Position unavailable.'
+      when error.PERMISSION_DENIED then msg += 'Please turn on location services.'
+      when error.UNKNOWN_ERROR then msg += error.code
+
+
+    $('.alert-message').remove()
+    alert = $('<div class="alert-message error fade in" data-alert="alert">')
+    alert.html('<a class="close" href="#">×</a>' + msg);
+    alert.insertBefore($('.span10'))
+
+
+
+      
+
+
 
   updateLocation: ->
     @location.url("/maps?q=#{@center.lat},#{@center.lng}&t=#{@mapType}&z=#{@zoom}")

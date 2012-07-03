@@ -4,13 +4,13 @@
 
   module = angular.module("myApp.controllers", []);
 
-  module.controller("MainCtrl", function($scope, GoogleMap, $location) {
-    return $scope.mapShown = function() {
-      return $location.path().indexOf('/map') > -1;
-    };
+  module.controller("MainCtrl", function($scope, GoogleMap) {
+    return $scope.map = GoogleMap;
   });
 
-  module.controller("HomeCtrl", function($scope, GoogleMap) {});
+  module.controller("HomeCtrl", function($scope) {});
+
+  module.controller("SearchCtrl", function($scope) {});
 
   module.controller("MapCtrl", function($scope) {});
 

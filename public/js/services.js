@@ -6,6 +6,8 @@
   module = angular.module("myApp.services", []);
 
   GMap = (function() {
+    var geoSuccessCallback, geolocationError,
+      _this = this;
 
     function GMap(options) {
       this.onTypeChange = __bind(this.onTypeChange, this);
@@ -20,10 +22,13 @@
 
       this.onDragStart = __bind(this.onDragStart, this);
 
+      this.onPositionButtonClick = __bind(this.onPositionButtonClick, this);
+
       var addListener, lat, ll, lng, q;
       this.rootScope = options.rootScope;
       this.dragging = 0;
       this.location = options.location;
+      this.positionTracking = false;
       q = this.location.search().q;
       if (q) {
         ll = q.split(',');
@@ -71,6 +76,7 @@
       this.mapEl.hide();
       this.resizeMapEl();
       this.win.resize(this.resizeMapEl);
+      $('#map-position-button').click(this.onPositionButtonClick);
       this.map = new google.maps.Map(this.mapEl[0], {
         zoom: this.zoom,
         center: new google.maps.LatLng(this.center.lat, this.center.lng),
@@ -89,6 +95,94 @@
       this.rootScope.mapType = this.mapType;
       this.updateLocation();
     }
+
+    GMap.prototype.onPositionButtonClick = function() {
+      if (!this.positionTracking.state) {
+        this.positionTrackingOn();
+        return this.positionTrackGoTo();
+      } else if (this.positionTracking.state) {
+        return this.cancelPositionTracking();
+      }
+    };
+
+    GMap.prototype.positionTrackingOn = function() {
+      var geoLoc, options, watchID;
+      if (!this.nav) {
+        this.nav = window.navigator;
+      }
+      if (this.nav) {
+        geoLoc = this.nav.geolocation;
+        window.map = this.map;
+        if (geoLoc) {
+          watchID = geoLoc.watchPosition(geoSuccessCallback, geolocationError, options = {
+            enableHighAccuracy: true
+          });
+        }
+        try {
+          geoLoc.getCurrentPosition(geoSuccessCallback, geolocationError, options = {
+            enableHighAccuracy: true
+          });
+        } catch (_error) {}
+        return this.positionTracking.state = true;
+      }
+    };
+
+    GMap.prototype.positionTrackGoTo = function() {
+      var pos;
+      pos = window.pos;
+      if (pos) {
+        return this.map.setCenter(new google.maps.LatLng(pos.lat(), pos.lng()));
+      }
+    };
+
+    GMap.prototype.cancelPositionTracking = function(watchID) {
+      window.navigator.geolocation.clearWatch(watchID);
+      try {
+        window.userPositionMarker.setMap(null);
+      } catch (_error) {}
+      return this.positionTracking.state = false;
+    };
+
+    geoSuccessCallback = function(position) {
+      var icon, image;
+      if (position.coords.latitude) {
+        window.pos = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+        try {
+          window.userPositionMarker.setMap(null);
+        } catch (_error) {}
+        icon = 'img/blue-dot.png';
+        image = new google.maps.MarkerImage(icon, new google.maps.Size(16, 16), new google.maps.Point(0, 0), new google.maps.Point(8, 3));
+        return window.userPositionMarker = new google.maps.Marker({
+          icon: image,
+          position: window.pos,
+          map: window.map,
+          title: 'You are here.'
+        });
+      }
+    };
+
+    geolocationError = function(error) {
+      var alert, msg;
+      console.log('geoLoc error');
+      msg = 'Unable to locate position. ';
+      switch (error.code) {
+        case error.TIMEOUT:
+          msg += 'Timeout.';
+          break;
+        case error.POSITION_UNAVAILABLE:
+          msg += 'Position unavailable.';
+          break;
+        case error.PERMISSION_DENIED:
+          msg += 'Please turn on location services.';
+          break;
+        case error.UNKNOWN_ERROR:
+          msg += error.code;
+      }
+      $('.alert-message').remove();
+      alert = $('<div class="alert-message error fade in" data-alert="alert">');
+      alert.html('<a class="close" href="#">×</a>' + msg);
+      return alert.insertBefore($('.span10'));
+    };
 
     GMap.prototype.updateLocation = function() {
       return this.location.url("/maps?q=" + this.center.lat + "," + this.center.lng + "&t=" + this.mapType + "&z=" + this.zoom);
@@ -144,7 +238,7 @@
 
     return GMap;
 
-  })();
+  }).call(this);
 
   module.factory("GoogleMap", function($rootScope, $location) {
     var SJO, initPosition, initZoom, mapOptions;

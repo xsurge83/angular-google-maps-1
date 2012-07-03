@@ -27,14 +27,37 @@
 	<script src="js/directives.js"></script>
 </head>
 <body ng-controller="MainCtrl">
+	<!-- NAVBAR -->
+	<div class="navbar navbar-fixed-top">
+		<div class="navbar-inner">
+			<table class="nav pull">
+				<tr>
+					<td><a href="#/" id="home-button"><img src="img/home.png" /></a></td>
+				</tr>
+			</table>
+			<table class="nav pull-right">
+				<tr>
+					<td id="map-button" ng-show="!mapShown()"><a href="#/map"><img src="img/map.png" /></a></td>
+					<td id="list-button" ng-show="mapShown()"><a href="#/list"><img src="img/list.png" /></a></td>
+
+					<td id="map-position-button" ng-show="mapShown()"><img src="img/position.png" /></td>
+					<td id="add-button" ng-show="mapShown()"><img src="img/add.png" /></td>
+
+					<td id="search-button"><a href="#/search"><img src="img/search.png" /></a></td>
+					<td id="layers-button" ng-show="mapShown()"><img src="img/layers.png" /></td>
+					<td id="menu-button"><a href="#/menu"><img src="img/menu.png" /></a></td>
+				</tr>
+			</table>
+		</div>
+	</div>
+
 
 	<div id="map" ng-show="mapShown()"></div>
-
-	<div id="map-crosshair">
+	<div id="map-crosshair" ng-show="mapShown()">
 		<img src="img/crosshair.png" />
 	</div>
 
-	<div id="map-info">
+	<div id="map-info" ng-show="mapShown()">
 		{{mapCenter.lat}},{{mapCenter.lng}}
 
 		<a href="https://maps.google.com/maps?q={{mapCenter.lat}},{{mapCenter.lng}}&t={{mapType}}&z={{mapZoom}}">Google Map</a>
@@ -42,18 +65,10 @@
 		<a href="{{protocol}}://{{host}}#/maps?q={{mapCenter.lat}},{{mapCenter.lng}}&t={{mapType}}&z={{mapZoom}}">OurField Map</a>
 	</div>
 
-	<!-- NAVBAR -->
-	<div class="navbar navbar-fixed-top">
-		<div class="navbar-inner">
-			<ul class="nav pull">
-				<li><a href="#/" class="btn btn-large">Home</a></li>
-				<li><a href="#/map" class="btn btn-large">Map</a></li>
-			</ul>
-		</div>
-	</div>
+
 
 	<!-- MAIN VIEW -->
-	<div ng-hide="mapShown()" ng-view></div>
+	<div class="container-fluid" ng-hide="mapShown()" ng-view></div>
 
 
 </body>
