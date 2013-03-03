@@ -160,15 +160,13 @@ class GMap
   getDirections: =>
     console.log 'getDirections'
     
-  addPlace: =>
+  addPlace:(lat, lng) =>
     #if confirm("Add a new place?")
-    lat = @map.getCenter().lat()
-    lng = @map.getCenter().lng()
+    lat = @map.getCenter().lat() if not lat
+    lng = @map.getCenter().lng() if not  lng 
     #console.log lat, lng
     marker = new GMarker(@map, lat, lng)
     # @places.create(territoryno: @preferences.get('territoryno'), point: "POINT (#{lat} #{lng})")
-
-
 
 
   onPositionButtonClick: =>
@@ -247,12 +245,6 @@ class GMap
     alert.html('<a class="close" href="#">×</a>' + msg);
     alert.insertBefore($('.span10'))
 
-
-
-      
-
-
-
   updateLocation: ->
     @location.url("/maps?q=#{@center.lat},#{@center.lng}&t=#{@mapType}&z=#{@zoom}")
 
@@ -299,7 +291,7 @@ class GMap
     @updateLocation()
 
 module.factory "GoogleMap", ($rootScope, $location) ->
-  SJO                     = {lat: 9.993552791991132, lng: -84.20888416469096}
+  SJO                     = {lat: 40.746347, lng: -73.993607}
   initPosition            = SJO
   initZoom                = 16
 
